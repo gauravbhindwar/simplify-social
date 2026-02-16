@@ -27,7 +27,8 @@ const swaggerSpec = swaggerJsdoc({
       contact: { name: 'Simplify Team' },
     },
     servers: [
-      { url: `http://localhost:${config.port}`, description: 'Local dev' },
+      { url: '/', description: 'Current Server (Relative)' },
+      { url: `http://localhost:${config.port}`, description: 'Localhost' },
     ],
     components: {
       securitySchemes: {
