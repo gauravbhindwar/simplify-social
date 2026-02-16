@@ -6,7 +6,7 @@ const logger = require('../utils/logger');
  * @swagger
  * /api/v1/whatsapp/send:
  *   post:
- *     summary: Send a WhatsApp message
+ *     summary: Send a WhatsApp message (Text, Media, or Template)
  *     tags: [WhatsApp]
  *     security:
  *       - ApiKeyAuth: []
@@ -16,7 +16,6 @@ const logger = require('../utils/logger');
  *         application/json:
  *           schema:
  *             type: object
- *             required: [to, message]
  *             properties:
  *               to:
  *                 type: string
@@ -24,8 +23,20 @@ const logger = require('../utils/logger');
  *                 example: "+919876543210"
  *               message:
  *                 type: string
- *                 description: Message body
+ *                 description: Message body (for text messages)
  *                 example: "Hello from Simplify on WhatsApp!"
+ *               mediaUrl:
+ *                 type: string
+ *                 description: URL of media to send (optional)
+ *                 example: "https://demo.twilio.com/owl.png"
+ *               contentSid:
+ *                 type: string
+ *                 description: Twilio Content Template SID (optional)
+ *                 example: "HXb5b62575e6e4ff6129ad7c8efe1f983e"
+ *               contentVariables:
+ *                 type: object
+ *                 description: Variables for the template (optional)
+ *                 example: {"1":"12/1", "2":"3pm"}
  *     responses:
  *       200:
  *         description: WhatsApp message sent successfully
@@ -44,8 +55,17 @@ async function handleSendWhatsApp(req, res, next) {
       });
     }
 
-    const { to, message } = req.body;
-    const result = await sendWhatsApp(to, message);
+    const { to, message, mediaUrl, contentSid, contentVariables } = req.body;
+    let result;
+
+    if (contentSid) {
+        // Send Template Message
+        const { sendTemplateMessage } = require('../services/whatsapp.service');
+        result = await sendTemplateMessage(to, contentSid, contentVariables);
+    } else {
+        // Send Freeform Message (Text/Media)
+        result = await sendWhatsApp(to, message, mediaUrl);
+    }
 
     return res.status(200).json({
       success: true,
