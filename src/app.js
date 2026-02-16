@@ -49,8 +49,21 @@ const swaggerSpec = swaggerJsdoc({
 // ── Express app ─────────────────────────────
 const app = express();
 
+// Trust proxy (needed for correct protocol detection behind Coolify/Traefik)
+app.set('trust proxy', 1);
+
 // Security headers
-app.use(helmet());
+// Disable upgrade-insecure-requests to allow HTTP access to Swagger docs
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'upgrade-insecure-requests': null,
+      },
+    },
+  })
+);
 
 // CORS — allow all origins (tighten in production)
 app.use(cors());
