@@ -14,7 +14,7 @@ const config = {
     phoneNumberId: process.env.META_PHONE_NUMBER_ID || '',
     wabaId: process.env.META_WABA_ID || '',
     phoneNumber: process.env.META_PHONE_NUMBER || '',
-    apiUrl: 'https://graph.facebook.com/v17.0',
+    apiUrl: 'https://graph.facebook.com/v22.0',
   },
 
   twilio: {

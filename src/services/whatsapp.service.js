@@ -1,85 +1,134 @@
-import twilio from 'twilio';
+import axios from 'axios';
 import config from '../config/index.js';
 import logger from '../utils/logger.js';
 
-let client = null;
-
-function getClient() {
-  if (!client) {
-    if (!config.twilio.accountSid || !config.twilio.authToken) {
-      throw new Error('Twilio credentials are not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in .env');
-    }
-    client = twilio(config.twilio.accountSid, config.twilio.authToken);
-  }
-  return client;
-}
-
 /**
- * Send a WhatsApp message via Twilio
+ * Send a WhatsApp message via Meta Cloud API
  * @param {string} to - Recipient phone number in E.164 format (e.g. +919876543210)
  * @param {string} body - Message body
  * @param {string|string[]} [mediaUrl] - Optional URL(s) of media to send
- * @returns {Promise<object>} Twilio message response
+ * @returns {Promise<object>} Meta API response
  */
 async function sendWhatsApp(to, body, mediaUrl) {
   logger.info(`Sending WhatsApp message to ${to}`);
-  const twilioClient = getClient();
 
-  const messageOptions = {
-    body,
-    from: `whatsapp:${config.twilio.whatsappNumber}`,
-    to: `whatsapp:${to}`,
-  };
-
-  if (mediaUrl) {
-      messageOptions.mediaUrl = Array.isArray(mediaUrl) ? mediaUrl : [mediaUrl];
+  if (!config.meta.phoneNumberId || !config.meta.userToken) {
+    throw new Error('Meta credentials (META_PHONE_NUMBER_ID, META_USER_TOKEN) are missing in .env');
   }
 
-  // Twilio WhatsApp requires whatsapp: prefix
-  const message = await twilioClient.messages.create(messageOptions);
+  // Remove '+' if present, Meta usually expects digits
+  const recipient = to.replace(/^\+/, '');
 
-  logger.info(`WhatsApp message sent successfully — SID: ${message.sid}`);
-  return {
-    sid: message.sid,
-    status: message.status,
-    to: message.to,
-    from: message.from,
-    dateCreated: message.dateCreated,
-  };
+  try {
+    const url = `${config.meta.apiUrl}/${config.meta.phoneNumberId}/messages`;
+
+    let payload;
+
+    if (mediaUrl) {
+      // Send media message
+      const mediaArray = Array.isArray(mediaUrl) ? mediaUrl : [mediaUrl];
+      payload = {
+        messaging_product: 'whatsapp',
+        to: recipient,
+        type: 'image', // Can be image, document, audio, video, etc.
+        image: { link: mediaArray[0] }, // Use first URL
+      };
+    } else {
+      // Send text message
+      payload = {
+        messaging_product: 'whatsapp',
+        to: recipient,
+        type: 'text',
+        text: { body },
+      };
+    }
+
+    const response = await axios.post(url, payload, {
+      headers: {
+        'Authorization': `Bearer ${config.meta.userToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    logger.info(`WhatsApp message sent successfully to ${to}`);
+    return {
+      success: true,
+      to,
+      provider: 'meta-cloud',
+      messageId: response.data?.messages?.[0]?.id,
+      data: response.data,
+    };
+  } catch (error) {
+    logger.error('Error sending WhatsApp message', {
+      error: error.message,
+      response: error.response?.data,
+    });
+    throw error;
+  }
 }
 
 /**
- * Send a WhatsApp Content Template message via Twilio
+ * Send a WhatsApp template message via Meta Cloud API
  * @param {string} to - Recipient phone number in E.164 format
- * @param {string} contentSid - The Twilio Content Template SID (e.g. HX...)
- * @param {object} contentVariables - Key-value pairs for template variables (e.g. {"1":"12/1"})
- * @returns {Promise<object>} Twilio message response
+ * @param {string} templateName - The template name (e.g. "hello_world")
+ * @param {object} [templateVariables] - Parameters for template placeholders (e.g. {"1":"value1", "2":"value2"})
+ * @param {string} [languageCode] - Language code (default: en_US)
+ * @returns {Promise<object>} Meta API response
  */
-async function sendTemplateMessage(to, contentSid, contentVariables) {
-    logger.info(`Sending WhatsApp template ${contentSid} to ${to}`);
-    const twilioClient = getClient();
-  
-    // Ensure contentVariables is a string if passed as object
-    const variablesStr = typeof contentVariables === 'string' 
-        ? contentVariables 
-        : JSON.stringify(contentVariables);
-  
-    const message = await twilioClient.messages.create({
-      from: `whatsapp:${config.twilio.whatsappNumber}`,
-      to: `whatsapp:${to}`,
-      contentSid: contentSid,
-      contentVariables: variablesStr,
-      // body is not required/allowed when using contentSid
-    });
-  
-    logger.info(`WhatsApp template message sent successfully — SID: ${message.sid}`);
-    return {
-      sid: message.sid,
-      status: message.status,
-      to: message.to,
-      from: message.from,
-      dateCreated: message.dateCreated,
-    };
+async function sendTemplateMessage(to, templateName, templateVariables, languageCode = 'en_US') {
+  logger.info(`Sending WhatsApp template "${templateName}" to ${to}`);
+
+  if (!config.meta.phoneNumberId || !config.meta.userToken) {
+    throw new Error('Meta credentials (META_PHONE_NUMBER_ID, META_USER_TOKEN) are missing in .env');
   }
+
+  // Remove '+' if present, Meta usually expects digits
+  const recipient = to.replace(/^\+/, '');
+
+  try {
+    const url = `${config.meta.apiUrl}/${config.meta.phoneNumberId}/messages`;
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      to: recipient,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: { code: languageCode },
+      },
+    };
+
+    // Add template parameters if provided
+    if (templateVariables && Object.keys(templateVariables).length > 0) {
+      payload.template.parameters = {
+        body: {
+          parameters: Object.values(templateVariables).map((val) => ({ type: 'text', text: val })),
+        },
+      };
+    }
+
+    const response = await axios.post(url, payload, {
+      headers: {
+        'Authorization': `Bearer ${config.meta.userToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    logger.info(`WhatsApp template message sent successfully to ${to}`);
+    return {
+      success: true,
+      to,
+      provider: 'meta-cloud',
+      messageId: response.data?.messages?.[0]?.id,
+      data: response.data,
+    };
+  } catch (error) {
+    logger.error('Error sending WhatsApp template message', {
+      error: error.message,
+      response: error.response?.data,
+    });
+    throw error;
+  }
+}
 
 export { sendWhatsApp, sendTemplateMessage };

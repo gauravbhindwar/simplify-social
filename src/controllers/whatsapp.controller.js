@@ -28,15 +28,19 @@ import logger from '../utils/logger.js';
  *               mediaUrl:
  *                 type: string
  *                 description: URL of media to send (optional)
- *                 example: "https://demo.twilio.com/owl.png"
- *               contentSid:
+ *                 example: "https://example.com/image.png"
+ *               templateName:
  *                 type: string
- *                 description: Twilio Content Template SID (optional)
- *                 example: "HXb5b62575e6e4ff6129ad7c8efe1f983e"
- *               contentVariables:
+ *                 description: Meta template name (optional)
+ *                 example: "hello_world"
+ *               templateVariables:
  *                 type: object
  *                 description: Variables for the template (optional)
- *                 example: {"1":"12/1", "2":"3pm"}
+ *                 example: {"1":"John", "2":"2pm"}
+ *               languageCode:
+ *                 type: string
+ *                 description: Language code for template (default en_US)
+ *                 example: "en_US"
  *     responses:
  *       200:
  *         description: WhatsApp message sent successfully
@@ -55,15 +59,15 @@ async function handleSendWhatsApp(req, res, next) {
       });
     }
 
-    const { to, message, mediaUrl, contentSid, contentVariables } = req.body;
+    const { to, message, mediaUrl, templateName, templateVariables, languageCode } = req.body;
     let result;
 
-    if (contentSid) {
-        // Send Template Message
-        result = await sendTemplateMessage(to, contentSid, contentVariables);
+    if (templateName) {
+      // Send Template Message
+      result = await sendTemplateMessage(to, templateName, templateVariables, languageCode);
     } else {
-        // Send Freeform Message (Text/Media)
-        result = await sendWhatsApp(to, message, mediaUrl);
+      // Send Freeform Message (Text/Media)
+      result = await sendWhatsApp(to, message, mediaUrl);
     }
 
     return res.status(200).json({
