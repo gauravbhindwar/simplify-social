@@ -1,6 +1,6 @@
-const twilio = require('twilio');
-const config = require('../config');
-const logger = require('../utils/logger');
+import twilio from 'twilio';
+import config from '../config/index.js';
+import logger from '../utils/logger.js';
 
 let client = null;
 
@@ -82,4 +82,4 @@ async function sendTemplateMessage(to, contentSid, contentVariables) {
     };
   }
 
-module.exports = { sendWhatsApp, sendTemplateMessage };
+export { sendWhatsApp, sendTemplateMessage };

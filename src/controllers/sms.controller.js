@@ -1,6 +1,6 @@
-const { validationResult } = require('express-validator');
-const { sendSMS } = require('../services/sms.service');
-const logger = require('../utils/logger');
+import { validationResult } from 'express-validator';
+import { sendSMS } from '../services/sms.service.js';
+import logger from '../utils/logger.js';
 
 /**
  * @swagger
@@ -57,4 +57,4 @@ async function handleSendSMS(req, res, next) {
   }
 }
 
-module.exports = { handleSendSMS };
+export { handleSendSMS };

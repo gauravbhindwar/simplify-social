@@ -1,6 +1,6 @@
-const { validationResult } = require('express-validator');
-const { sendWhatsAppCloud } = require('../services/whatsapp-cloud.service');
-const logger = require('../utils/logger');
+import { validationResult } from 'express-validator';
+import { sendWhatsAppCloud } from '../services/whatsapp-cloud.service.js';
+import logger from '../utils/logger.js';
 
 /**
  * @swagger
@@ -58,4 +58,4 @@ async function handleSendWhatsAppCloud(req, res, next) {
   }
 }
 
-module.exports = { handleSendWhatsAppCloud };
+export { handleSendWhatsAppCloud };

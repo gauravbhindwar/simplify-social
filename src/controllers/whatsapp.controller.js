@@ -1,6 +1,6 @@
-const { validationResult } = require('express-validator');
-const { sendWhatsApp } = require('../services/whatsapp.service');
-const logger = require('../utils/logger');
+import { validationResult } from 'express-validator';
+import { sendWhatsApp, sendTemplateMessage } from '../services/whatsapp.service.js';
+import logger from '../utils/logger.js';
 
 /**
  * @swagger
@@ -60,7 +60,6 @@ async function handleSendWhatsApp(req, res, next) {
 
     if (contentSid) {
         // Send Template Message
-        const { sendTemplateMessage } = require('../services/whatsapp.service');
         result = await sendTemplateMessage(to, contentSid, contentVariables);
     } else {
         // Send Freeform Message (Text/Media)
@@ -77,4 +76,4 @@ async function handleSendWhatsApp(req, res, next) {
   }
 }
 
-module.exports = { handleSendWhatsApp };
+export { handleSendWhatsApp };

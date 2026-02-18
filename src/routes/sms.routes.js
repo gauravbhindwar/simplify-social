@@ -1,6 +1,6 @@
-const { Router } = require('express');
-const { body } = require('express-validator');
-const { handleSendSMS } = require('../controllers/sms.controller');
+import { Router } from 'express';
+import { body } from 'express-validator';
+import { handleSendSMS } from '../controllers/sms.controller.js';
 
 const router = Router();
 
@@ -17,4 +17,4 @@ router.post(
   handleSendSMS
 );
 
-module.exports = router;
+export default router;

@@ -1,20 +1,20 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
-const apiKeyAuth = require('./middleware/apiKeyAuth');
-const errorHandler = require('./middleware/errorHandler');
+import apiKeyAuth from './middleware/apiKeyAuth.js';
+import errorHandler from './middleware/errorHandler.js';
 
-const healthRoutes = require('./routes/health.routes');
-const smsRoutes = require('./routes/sms.routes');
-const whatsappRoutes = require('./routes/whatsapp.routes');
-const whatsappCloudRoutes = require('./routes/whatsapp-cloud.routes');
+import healthRoutes from './routes/health.routes.js';
+import smsRoutes from './routes/sms.routes.js';
+import whatsappRoutes from './routes/whatsapp.routes.js';
+import whatsappCloudRoutes from './routes/whatsapp-cloud.routes.js';
 
-const config = require('./config');
+import config from './config/index.js';
 
 // ── Swagger config ──────────────────────────
 const swaggerSpec = swaggerJsdoc({
@@ -119,4 +119,4 @@ app.use((_req, res) => {
 // ── Global error handler ─────────────────────
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

@@ -1,6 +1,6 @@
-const { Router } = require('express');
-const { body } = require('express-validator');
-const { handleSendWhatsApp } = require('../controllers/whatsapp.controller');
+import { Router } from 'express';
+import { body } from 'express-validator';
+import { handleSendWhatsApp } from '../controllers/whatsapp.controller.js';
 
 const router = Router();
 
@@ -26,4 +26,4 @@ router.post(
   handleSendWhatsApp
 );
 
-module.exports = router;
+export default router;

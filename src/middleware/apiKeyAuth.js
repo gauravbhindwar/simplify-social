@@ -1,5 +1,5 @@
-const config = require('../config');
-const logger = require('../utils/logger');
+import config from '../config/index.js';
+import logger from '../utils/logger.js';
 
 /**
  * Simple API-key authentication middleware.
@@ -33,4 +33,4 @@ function apiKeyAuth(req, res, next) {
   next();
 }
 
-module.exports = apiKeyAuth;
+export default apiKeyAuth;

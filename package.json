@@ -2,6 +2,7 @@
   "name": "simplify-social",
   "version": "1.0.0",
   "description": "Social Media Integration API — SMS, WhatsApp & more",
+  "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

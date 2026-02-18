@@ -1,4 +1,4 @@
-const logger = require('../utils/logger');
+import logger from '../utils/logger.js';
 
 /**
  * Global error handler middleware.
@@ -17,4 +17,4 @@ function errorHandler(err, _req, res, _next) {
   });
 }
 
-module.exports = errorHandler;
+export default errorHandler;

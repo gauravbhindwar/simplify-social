@@ -1,6 +1,6 @@
-const config = require('./config');
-const app = require('./app');
-const logger = require('./utils/logger');
+import config from './config/index.js';
+import app from './app.js';
+import logger from './utils/logger.js';
 
 app.listen(config.port, () => {
   logger.info(`🚀 Simplify Social API running on port ${config.port}`);
